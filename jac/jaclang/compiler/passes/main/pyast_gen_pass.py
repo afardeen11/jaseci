@@ -10,9 +10,10 @@ from dataclasses import dataclass
 from typing import Optional, Sequence, TypeVar, cast
 
 import jaclang.compiler.absyntree as ast
-from jaclang.compiler.constant import Constants as Con, EdgeDir, Tokens as Tok
+from jaclang.compiler.constant import Constants as Con, EdgeDir, Tokens as Tok, SymbolType
 from jaclang.compiler.passes import AstPass
 from jaclang.settings import settings
+
 
 T = TypeVar("T", bound=ast3.AST)
 
@@ -3031,12 +3032,33 @@ class PyastGenPass(AstPass):
             else:
                 node.gen.py_ast = []
 
+    
     def exit_special_var_ref(self, node: ast.SpecialVarRef) -> None:
         """Sub objects.
 
         var: Token,
         """
-        if node.name == Tok.KW_SUPER:
+ 
+        arch = node.find_parent_of_type(ast.Architype)
+        arch_type = arch.arch_type.name if arch else None 
+
+        if node.name == Tok.KW_VISITOR:
+            if arch_type not in (Tok.KW_NODE.name, Tok.KW_EDGE.name):
+                self.log_error(
+                    f"'visitor' can only appear inside node or edge abilities, "
+                    f"but found in '{arch_type or 'UNKNOWN'}' context.",
+                    node_override=node,
+                )
+
+        elif node.name == Tok.KW_HERE:
+            if arch_type != Tok.KW_WALKER.name:
+                self.log_error(
+                    f"'here' can only appear inside walker abilities, "
+                    f"but found in '{arch_type or 'UNKNOWN'}' context.",
+                    node_override=node,
+                )
+
+        elif node.name == Tok.KW_SUPER:
             node.gen.py_ast = [
                 self.sync(
                     ast3.Call(

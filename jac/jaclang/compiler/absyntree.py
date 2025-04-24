@@ -4253,9 +4253,9 @@ class SpecialVarRef(Name):
         elif self.orig.name == Tok.KW_ROOT:
             return Con.ROOT.value
         elif self.orig.name == Tok.KW_HERE:
-            return Con.HERE.value
+            return Con.HERE.value # change to "here"?
         elif self.orig.name == Tok.KW_VISITOR:
-            return Con.HERE.value
+            return Con.HERE.value # or change this to visitor.value and implement that?
         elif self.orig.name == Tok.KW_INIT:
             return "__init__"
         elif self.orig.name == Tok.KW_POST_INIT:
